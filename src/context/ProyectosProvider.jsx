@@ -14,6 +14,7 @@ const ProyectosProvider = ({children})=>{
     const [proyectos, setProyectos] = useState([]);
     const [proyecto, setProyecto] = useState({});
     const [cargando, setCargando] = useState(false);
+    const [modalTarea, setModalTarea] = useState(false);
 
     const navigate = useNavigate(); 
 
@@ -34,6 +35,7 @@ const ProyectosProvider = ({children})=>{
         }, 500);
     }
 
+    // *Mostrar Alerta--------------------------------------------------
     const mostrarAlerta = alerta=>{
         setAlerta(alerta);
 
@@ -210,7 +212,8 @@ const ProyectosProvider = ({children})=>{
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Si, eliminar!',
+            cancelButtonText: 'Cancelar!',
         }).then((result) => {
             if (result.isConfirmed) {
                 eliminarProyecto(id);
@@ -259,6 +262,43 @@ const ProyectosProvider = ({children})=>{
 
     }
 
+    // *Abrir o cerrar el modal de tareas----------------------------
+    const handleModalTarea = ()=>{
+        setModalTarea(!modalTarea);
+    }
+
+    // *Agregar tarea------------------------------------------------
+    const agregarTarea = async tarea=>{
+
+        try {
+            
+            const jwt = localStorage.getItem('jwt');
+
+            if(!jwt){
+                return;
+            }
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwt}`
+                }
+            }
+
+            const {data} = await clienteAxios.post('/tareas', tarea, config);
+
+            // *Agregar la tarea al state
+            const proyectoActualizado = {...proyecto}
+            proyectoActualizado.tareas = [...proyecto.tareas, data];
+
+            setProyecto(proyectoActualizado);
+
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+
     return (
         <ProyectosContext.Provider
             value={{
@@ -273,7 +313,10 @@ const ProyectosProvider = ({children})=>{
                 proyecto,
                 cargando,
                 editar,
-                alertaEliminar
+                alertaEliminar,
+                modalTarea,
+                handleModalTarea,
+                agregarTarea
             }}
         >
             {children}

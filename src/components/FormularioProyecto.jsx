@@ -162,7 +162,7 @@ const FormularioProyecto = () => {
             <input 
                 type="submit" 
                 value={editar ? 'Actualizar Proyecto' : 'Crear Proyecto'}
-                className="p-3 w-full bg-indigo-600 text-white transition-all duration-300 hover:bg-indigo-700 cursor-pointer" 
+                className="p-3 w-full bg-indigo-500 text-white transition-all duration-300 hover:bg-indigo-600 cursor-pointer" 
             />
         </form>
     )

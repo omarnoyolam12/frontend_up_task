@@ -20,6 +20,8 @@ const Login = () => {
 
     const {setAuth} = useAuth();
 
+    const navigate = useNavigate();
+
     // *Función para validar el email------------------------------
     const validarEmail = valor =>{
 
@@ -65,6 +67,7 @@ const Login = () => {
             localStorage.setItem('jwt', data.token);
             setAlerta({});
             setAuth(data);
+            navigate('/dashboard');
 
         } catch (error) {
             setAlerta({
