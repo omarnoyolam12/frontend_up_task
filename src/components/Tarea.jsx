@@ -1,3 +1,4 @@
+import useProyectos from "../hooks/useProyectos";
 import formatearFecha from "../helpers/formatearFecha";
 
 import editar from "../img/editar.svg";
@@ -6,6 +7,8 @@ import basura from "../img/basura.svg";
 const Tarea = ({tarea}) => {
 
     const {nombre, descripcion, fechaEntrega, prioridad, estado} = tarea;
+
+    const {handleModalEditarTarea, alertaEliminarTarea} = useProyectos();
 
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-7 p-3 bg-white rounded-lg gap-2 shadow-lg">
@@ -41,11 +44,17 @@ const Tarea = ({tarea}) => {
                 }
             </div>
             <div className="col-span-1 flex justify-start lg:justify-center items-center text-slate-700 text-sm gap-3">
-                <button className="w-8 h-8 bg-gray-200 flex justify-center items-start p-1 rounded-md">
+                <button 
+                    className="w-8 h-8 bg-gray-200 flex justify-center items-start p-1 rounded-md"
+                    onClick={()=> handleModalEditarTarea(tarea)}
+                >
                     <img src={editar} alt="editar" />
                 </button>
 
-                <button className="w-8 h-8 bg-red-300 flex justify-center items-start p-1 rounded-md">
+                <button 
+                    className="w-8 h-8 bg-red-300 flex justify-center items-start p-1 rounded-md"
+                    onClick={()=> alertaEliminarTarea(tarea)}    
+                >
                     <img src={basura} alt="eliminar" />
                 </button>
             </div>

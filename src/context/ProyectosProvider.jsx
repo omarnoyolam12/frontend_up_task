@@ -15,6 +15,7 @@ const ProyectosProvider = ({children})=>{
     const [proyecto, setProyecto] = useState({});
     const [cargando, setCargando] = useState(false);
     const [modalTarea, setModalTarea] = useState(false);
+    const [tarea, setTarea] = useState({});
 
     const navigate = useNavigate(); 
 
@@ -210,7 +211,7 @@ const ProyectosProvider = ({children})=>{
             text: "Esta acción, no puede revertirse",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#6366f1',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Si, eliminar!',
             cancelButtonText: 'Cancelar!',
@@ -265,10 +266,22 @@ const ProyectosProvider = ({children})=>{
     // *Abrir o cerrar el modal de tareas----------------------------
     const handleModalTarea = ()=>{
         setModalTarea(!modalTarea);
+        setTarea({});
     }
 
-    // *Agregar tarea------------------------------------------------
+    // *Elegir si edita o agrega una tarea nueva---------------------
     const agregarTarea = async tarea=>{
+
+        if(tarea.id){
+            await editarTarea(tarea);
+        }
+        else{
+            await crearTarea(tarea);
+        }
+    }
+
+    // *Crear una nueva tarea----------------------------------------
+    const crearTarea = async tarea=>{
 
         try {
             
@@ -296,6 +309,104 @@ const ProyectosProvider = ({children})=>{
         } catch (error) {
             console.log(error);
         }
+    }
+
+    // *Editar una tarea------------------------------------------------
+    const editarTarea = async tarea=>{
+        
+        try {
+            
+            const jwt = localStorage.getItem('jwt');
+
+            if(!jwt){
+                return;
+            }
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwt}`
+                }
+            }
+
+            const {data} = await clienteAxios.put(`/tareas/${tarea.id}`, tarea, config);
+
+            // *Actualizar el DOM
+            const proyectoActualizado = {...proyecto};
+
+            proyectoActualizado.tareas = proyectoActualizado.tareas.map(tareaState => tareaState._id === data._id ? data : tareaState);
+
+            setProyecto(proyectoActualizado);
+
+        } catch (error) {
+            console.log(error);
+        }
+
+    }
+
+    // *Abrir el modal con los campos llenos----------------------------
+    const handleModalEditarTarea = tarea=>{
+        setTarea(tarea);
+        setModalTarea(true);
+    }
+
+    // *Alerta eliminar tarea-------------------------------------------
+    const alertaEliminarTarea = tarea=>{
+        
+        Swal.fire({
+            title: 'Eliminar Tarea?',
+            text: "Esta acción, no puede revertirse",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#6366f1',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, eliminar!',
+            cancelButtonText: 'Cancelar!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                eliminarTarea(tarea);
+            }
+        });
+    }
+
+    // *Eliminar tarea
+    const eliminarTarea = async tarea=>{
+
+        try {
+            
+            const jwt = localStorage.getItem('jwt');
+
+            if(!jwt){
+                return;
+            }
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwt}`
+                }
+            }
+
+            const {data} = await clienteAxios.delete(`/tareas/${tarea._id}`, config);
+
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: data.msg,
+                showConfirmButton: false,
+                timer: 2000
+            });
+
+            // *Actualizar el DOM
+            const proyectoActualizado = {...proyecto};
+            proyectoActualizado.tareas = proyectoActualizado.tareas.filter(tareaState => tareaState._id !== tarea._id);
+
+            setProyecto(proyectoActualizado);
+
+
+        } catch (error) {
+            console.log(error);
+        }
 
     }
 
@@ -316,7 +427,10 @@ const ProyectosProvider = ({children})=>{
                 alertaEliminar,
                 modalTarea,
                 handleModalTarea,
-                agregarTarea
+                agregarTarea,
+                handleModalEditarTarea,
+                tarea,
+                alertaEliminarTarea
             }}
         >
             {children}

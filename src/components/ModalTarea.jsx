@@ -11,15 +11,39 @@ const PRIORIDAD = ['Baja', 'Media', 'Alta'];
 
 const ModalTarea = () => {
 
+    const [id, setId] = useState('');
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [fechaEntrega, setFechaEntrega] = useState('');
     const [prioridad, setPrioridad] = useState('');
 
-    const {modalTarea, handleModalTarea, mostrarAlerta, alerta, agregarTarea} = useProyectos();
+    const {modalTarea, handleModalTarea, mostrarAlerta, alerta, agregarTarea, tarea} = useProyectos();
 
     const params = useParams();
 
+    // *Llenar formulario para editar la tarea----------------------------
+    useEffect(()=>{
+        
+        if(tarea?._id){
+            setId(tarea._id)
+            setNombre(tarea.nombre);
+            setDescripcion(tarea.descripcion);
+            setFechaEntrega(tarea.fechaEntrega.split('T')[0]);
+            setPrioridad(tarea.prioridad);
+
+            return;
+        }
+
+        setId('');
+        setNombre('');
+        setDescripcion('');
+        setFechaEntrega('');
+        setPrioridad('');
+        
+
+    }, [tarea]);
+
+    // *Agregar tarea -----------------------------------------------------
     const handleSubmit = async e=>{
 
         e.preventDefault();
@@ -35,27 +59,25 @@ const ModalTarea = () => {
             return;
         }
 
-        await agregarTarea({nombre, descripcion, fechaEntrega, prioridad, proyecto: params.id});
+        await agregarTarea({id, nombre, descripcion, fechaEntrega, prioridad, proyecto: params.id});
 
-        mostrarAlerta({
-            msg: 'Tarea agregada correctamente',
-            error: false
-        });
-
+        // *Resetear los valores del formulario
+        setId('');
         setNombre('');
         setDescripcion('');
         setFechaEntrega('');
         setPrioridad('');
 
-        
+        // *Cerrar el modal
         handleModalTarea();
         
+        // *Mostar alerta de correcto
         Swal.fire({
             position: 'center',
             icon: 'success',
-            title: 'Tarea creada correctamente',
+            title: id ? 'Tarea editada correctamente' : 'Tarea agregada correctamente',
             showConfirmButton: false,
-            timer: 1500
+            timer: 2000
         });
 
     }
@@ -114,7 +136,7 @@ const ModalTarea = () => {
                             <div className="sm:flex sm:items-start">
                                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                                     <Dialog.Title as="h3" className="text-lg leading-6 font-bold text-indigo-500 mb-5">
-                                        Crear tarea
+                                        {id ? 'Editar Tarea' : 'Crear Tarea'}
                                     </Dialog.Title>
 
                                     <form
@@ -204,7 +226,7 @@ const ModalTarea = () => {
 
                                         <input 
                                             type="submit" 
-                                            value="Crear Tarea"
+                                            value={id ? 'Actualizar Tarea' : 'Crear Tarea'}
                                             className='w-full p-3 text-center bg-indigo-500 text-white transition-all duration-300 hover:bg-indigo-600 cursor-pointer' 
                                         />
 
